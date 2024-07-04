@@ -1,4 +1,5 @@
 .idea/*
 Pipfile
-
+__pycache__/
+tests.zip
 

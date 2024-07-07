@@ -1,6 +1,5 @@
 import math
 import sys
-import pprint
 
 EPSILON = 0.001
 
@@ -73,21 +72,26 @@ def read_input(file_name):
         return vectors
 
 
-def k_means_algorithm(K, iter_limit=200):
-    # K = sys.argv[0]
-    # iter_limit = int(sys.argv[1])
-    # file_name = sys.argv[2]
-    file_name = "input_1.txt"
+def validity_check(file_name, K, iter_limit=200):
+    if not 1 < iter_limit < 1000:
+        print("Invalid maximum iteration!")
+        return 0
     vectors = read_input(file_name)
+    vectors_count = len(vectors)
+    if not 1 < K < vectors_count:
+        print("Invalid number of clusters!")
+        return 0
+    return vectors
+
+
+def k_means_algorithm(vectors, K, iter_limit=200):
     clusters = initialize_centroids(vectors, K)
     """
     Initialize starting K clusters
     """
     iter_number = 0
     flag = False
-    count = 0
     while iter_number <= iter_limit and not flag:
-        count += 1
         iter_number += 1
         for xi in vectors:
             """
@@ -108,14 +112,11 @@ def k_means_algorithm(K, iter_limit=200):
                 if convergence >= EPSILON:
                     flag = False
             cluster.reset_sum_and_size()
-    print(f"Count is {count}")
     if flag:
         for cluster in clusters:
-            cluster.set_centroid([round(xi, 4) for xi in cluster.get_centroid()])
+            cluster.set_centroid([float("%.4f" % xi) for xi in cluster.get_centroid()])
         centroids = [cluster.get_centroid() for cluster in clusters]
-        pprint.pprint(centroids)
         return centroids
-        # pprint.pprint(clusters)
 
 
 def calculate_closest_cluster(clusters, vect_xi):
@@ -127,3 +128,34 @@ def calculate_closest_cluster(clusters, vect_xi):
             min_eucledian_distance = temp_ed
             min_cluster = cluster
     return min_cluster
+
+
+def parse_arguments():
+    if len(sys.argv) == 4:
+        K = int(sys.argv[1])
+        iter_limit = int(sys.argv[2])
+        file_name = sys.argv[3]
+        return K, iter_limit, file_name
+    elif len(sys.argv) == 3:
+        K = int(sys.argv[1])
+        file_name = sys.argv[2]
+        iter_limit = 200
+        return K, iter_limit, file_name
+
+
+def main():
+    K, iter_limit, file_name = parse_arguments()
+    try:
+        vectors = validity_check(file_name, K, iter_limit)
+        if vectors == 0:
+            return
+        centroids = k_means_algorithm(vectors, K, iter_limit)
+        for centroid in centroids:
+            print(",".join(str(element) for element in centroid))
+    except Exception as e:
+        # print(f"error: {e}")
+        print("An Error Has Occurred")
+
+
+if __name__ == "__main__":
+    main()
